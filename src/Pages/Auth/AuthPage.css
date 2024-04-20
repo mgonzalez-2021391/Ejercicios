@@ -86,3 +86,12 @@
     width: 400px;
     color: red;
 }
+
+.cursor {
+    cursor: pointer;
+}
+
+.cursor:hover {
+    text-decoration: underline;
+    color: #2b7df0;
+}

@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { Input } from './Input.jsx'
+import { emailValidationMessage, passwordConfirmValidationMessage, passwordValidationMessage, usernameValidationMessage, validateEmail, validatePassword, validatePasswordConfirm, validateUsername } from "../shared/validators/validator.js";
+import { useRegister } from "../shared/hooks/useRegister.jsx";
 
-export const  Register = ({switchAuthAndler}) => {
+export const Register = ({switchAuthAndler}) => {
+    const {register, isLoading} = useRegister()
 
     const [formData, setFormData] = useState (
         {
@@ -28,10 +31,18 @@ export const  Register = ({switchAuthAndler}) => {
         }
     )
 
-    const isSumbitButtonDisable = false;
+    const isSubmitButtonDisable = !formData.email.isValid ||
+                                  !formData.username.isValid ||
+                                  !formData.password.isValid ||
+                                  !formData.passwordConfirm.isValid
 
     const handleRegister = async(e)=>{
         e.preventDefault()
+        register(
+                    formData.email.value,
+                    formData.username.value,
+                    formData.password.value
+        )
         console.log(formData)
     }
 
@@ -48,8 +59,35 @@ export const  Register = ({switchAuthAndler}) => {
     }
 
     const handleValidationOnBlur = (value, field)=>{
-            
+            let isValid = false
+            switch(field){
+                case 'email':
+                    isValid = validateEmail(value)
+                    break
+                case 'username':
+                    isValid = validateUsername(value)
+                    break
+                case 'password':
+                    isValid = validatePassword(value)
+                    break
+                case 'passwordConfirm':
+                    isValid = validatePasswordConfirm(formData.password.value, value)
+                    break
+                default:
+                    break
+            }
+            setFormData((prevData)=> (
+                {
+                    ...prevData,
+                    [field]: {
+                        ...prevData[field],
+                        isValid,
+                        showError: !isValid
+                    }
+                }
+            ))
     }
+
   return (
     <div className='register-container'>
         <form className="auth-form"
@@ -62,12 +100,43 @@ export const  Register = ({switchAuthAndler}) => {
                 type='email'
                 onBlurHandler={handleValidationOnBlur}
                 showErrorMessage={formData.email.showError}
+                validationMessage={emailValidationMessage}
             />
-            <button disabled={isSumbitButtonDisable}>
+            <Input
+                field='username'
+                label='Username'
+                value={formData.username.value}
+                onChangeHandler={handleValueChange}
+                type='text'
+                onBlurHandler={handleValidationOnBlur}
+                showErrorMessage={formData.username.showError}
+                validationMessage={usernameValidationMessage}
+            />
+            <Input
+                field='password'
+                label='Password'
+                value={formData.password.value}
+                onChangeHandler={handleValueChange}
+                type='password'
+                onBlurHandler={handleValidationOnBlur}
+                showErrorMessage={formData.password.showError}
+                validationMessage={passwordValidationMessage}
+            />
+            <Input
+                field='passwordConfirm'
+                label='Password Confirmation'
+                value={formData.passwordConfirm.value}
+                onChangeHandler={handleValueChange}
+                type='password'
+                onBlurHandler={handleValidationOnBlur}
+                showErrorMessage={formData.passwordConfirm.showError}
+                validationMessage={passwordConfirmValidationMessage}
+            />
+            <button disabled={isSubmitButtonDisable}>
                 Register
             </button>
         </form>
-        <span onClick={switchAuthAndler}>
+        <span className="cursor" onClick={switchAuthAndler}>
             ¿Ya tienes una cuenta? ¡Inicia sesión acá!
         </span>
     </div>
